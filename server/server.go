@@ -17,8 +17,10 @@ import (
 	"buf.build/gen/go/agntcy/oasf-sdk/grpc/go/agntcy/oasfsdk/validation/v1/validationv1grpc"
 	"github.com/agntcy/oasf-sdk/server/config"
 	decodingcontrollerv1 "github.com/agntcy/oasf-sdk/server/controller/decoding/v1"
+	mcpcontrollerv1 "github.com/agntcy/oasf-sdk/server/controller/mcp/v1"
 	translationcontrollerv1 "github.com/agntcy/oasf-sdk/server/controller/translation/v1"
 	validationcontrollerv1 "github.com/agntcy/oasf-sdk/server/controller/validation/v1"
+	mcpv1 "github.com/agntcy/oasf-sdk/server/gen/agntcy/oasfsdk/mcp/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -66,6 +68,7 @@ func NewServer(ctx context.Context, cfg *config.Config) (*Server, error) {
 	decodingv1grpc.RegisterDecodingServiceServer(server.grpcServer, decodingcontrollerv1.New())
 	translationv1grpc.RegisterTranslationServiceServer(server.grpcServer, translationcontrollerv1.New())
 	validationv1grpc.RegisterValidationServiceServer(server.grpcServer, validationController)
+	mcpv1.RegisterMCPServiceServer(server.grpcServer, mcpcontrollerv1.NewMCPController())
 
 	reflection.Register(server.grpcServer)
 

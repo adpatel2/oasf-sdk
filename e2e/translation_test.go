@@ -11,6 +11,7 @@ import (
 
 	"buf.build/gen/go/agntcy/oasf-sdk/grpc/go/agntcy/oasfsdk/translation/v1/translationv1grpc"
 	translationv1 "buf.build/gen/go/agntcy/oasf-sdk/protocolbuffers/go/agntcy/oasfsdk/translation/v1"
+	mcpv1 "github.com/agntcy/oasf-sdk/e2e/gen/agntcy/oasfsdk/mcp/v1"
 	"github.com/agntcy/oasf-sdk/pkg/decoder"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -23,6 +24,7 @@ var _ = Describe("Translation Service E2E", func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	client := translationv1grpc.NewTranslationServiceClient(conn)
+	mcpClient := mcpv1.NewMCPServiceClient(conn)
 
 	Context("GH Copilot config Generation", func() {
 		It("should generate github GH Copilot config matching expected output", func() {
@@ -123,6 +125,45 @@ var _ = Describe("Translation Service E2E", func() {
 			var actualOutput map[string]interface{}
 			err = json.Unmarshal(actualJSON, &actualOutput)
 			Expect(err).NotTo(HaveOccurred(), "Failed to unmarshal actual A2AToRecord output")
+
+			// Compare structure against expected output
+			Expect(actualOutput).To(Equal(expectedOutput), "OASF record should match expected output")
+		})
+	})
+
+	Context("MCP to Record Translation", func() {
+		It("should convert MCP configuration to OASF record matching expected output", func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			encodedMCPData, err := decoder.JsonToProto(expectedMCPToRecordInput)
+			Expect(err).NotTo(HaveOccurred(), "Failed to encode MCP data")
+
+			// Extract the mcpConfig field from the input data
+			mcpConfigField := encodedMCPData.GetFields()["mcpConfig"]
+			Expect(mcpConfigField).NotTo(BeNil(), "Expected mcpConfig field in input data")
+
+			req := &mcpv1.MCPToRecordRequest{
+				McpConfig: mcpConfigField.GetStructValue(),
+			}
+
+			resp, err := mcpClient.MCPToRecord(ctx, req)
+			Expect(err).NotTo(HaveOccurred(), "MCPToRecord should not fail")
+			Expect(resp.Record).NotTo(BeNil(), "Expected OASF record in response")
+
+			// Convert response to JSON for comparison
+			actualJSON, err := json.MarshalIndent(resp.Record.AsMap(), "", "  ")
+			Expect(err).NotTo(HaveOccurred(), "Failed to marshal record to JSON")
+
+			// Parse expected output
+			var expectedOutput map[string]interface{}
+			err = json.Unmarshal(expectedMCPToRecordOutput, &expectedOutput)
+			Expect(err).NotTo(HaveOccurred(), "Failed to unmarshal expected MCPToRecord output")
+
+			// Parse actual output for comparison
+			var actualOutput map[string]interface{}
+			err = json.Unmarshal(actualJSON, &actualOutput)
+			Expect(err).NotTo(HaveOccurred(), "Failed to unmarshal actual MCPToRecord output")
 
 			// Compare structure against expected output
 			Expect(actualOutput).To(Equal(expectedOutput), "OASF record should match expected output")

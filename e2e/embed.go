@@ -37,3 +37,9 @@ var expectedA2AOutput []byte
 
 //go:embed fixtures/expected_a2atorecord_output.json
 var expectedA2AToRecordOutput []byte
+
+//go:embed fixtures/expected_mcptorecord_input.json
+var expectedMCPToRecordInput []byte
+
+//go:embed fixtures/expected_mcptorecord_output.json
+var expectedMCPToRecordOutput []byte

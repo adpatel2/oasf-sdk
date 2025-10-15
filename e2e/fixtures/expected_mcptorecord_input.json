@@ -1,0 +1,29 @@
+{
+  "mcpConfig": {
+    "servers": {
+      "patient-management-mcp": {
+        "name": "patient-management-mcp",
+        "type": "http",
+        "url": "https://github.com/ssyechuri/healthcare_agent/tree/main/supervisor",
+        "capabilities": ["notify", "subscribe"],
+        "title": "Patient Management MCP Server",
+        "description": "MCP server providing access to patient records and appointment scheduling tools",
+        "tools": [
+          {
+            "name": "scheduleAppointment",
+            "description": "Tool to schedule a new patient appointment."
+          }
+        ],
+        "resources": [
+          {
+            "name": "Patient Management MCP Server",
+            "audience": ["user", "assistant"],
+            "uri": "https://github.com/ssyechuri/healthcare_agent/tree/main/supervisor",
+            "description": "MCP server providing access to patient records and appointment scheduling tools."
+          }
+        ],
+        "prompts": []
+      }
+    }
+  }
+}
